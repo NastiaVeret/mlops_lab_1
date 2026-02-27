@@ -1,0 +1,41 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py C:\Users\User\mlops_lab_1\data\row\dataset.csv 
+      data/prepared
+    deps:
+    - path: data\row\dataset.csv
+      hash: md5
+      md5: 308443a50e5c993e7b8a1cdb95750026
+      size: 66212309
+    - path: src/prepare.py
+      hash: md5
+      md5: dfc602fbdbea35bde09c520714493014
+      size: 660
+    outs:
+    - path: data/prepared
+      hash: md5
+      md5: 18cc2489a9fc84fe361f28da0639c9d6.dir
+      size: 65417734
+      nfiles: 2
+  train:
+    cmd: python src/train.py  --train_data data/prepared/train.csv  --test_data 
+      data/prepared/test.csv  --c_param 1.0  --max_iter 100  --max_features 5000
+    deps:
+    - path: data/prepared/test.csv
+      hash: md5
+      md5: 6492d1ccfa680c50c57102e70d989cd7
+      size: 13046204
+    - path: data/prepared/train.csv
+      hash: md5
+      md5: 4ef780bd16b3800a8c1a10f35e804cfa
+      size: 52371530
+    - path: src/train.py
+      hash: md5
+      md5: f649ecff78d2cd3bd52b66d2a80f3fb4
+      size: 2458
+    outs:
+    - path: confusion_matrix.png
+      hash: md5
+      md5: b4f4ccd65baaa8fe5ac5a6b0fba986f5
+      size: 13861
