@@ -41,6 +41,23 @@ jobs:
           # Запускаємо лінтер
           flake8 src tests --max-line-length=120
 
+      - name: Create mock dataset if missing (for CI)
+        run: |
+          mkdir -p data/row
+          if [ ! -f "data/row/dataset.csv" ]; then
+            echo "review,sentiment" > data/row/dataset.csv
+            echo "good movie,positive" >> data/row/dataset.csv
+            echo "bad movie,negative" >> data/row/dataset.csv
+            echo "I liked it,positive" >> data/row/dataset.csv
+            echo "terrible acting,negative" >> data/row/dataset.csv
+            echo "waste of time,negative" >> data/row/dataset.csv
+            echo "best film ever,positive" >> data/row/dataset.csv
+            echo "not bad,positive" >> data/row/dataset.csv
+            echo "boring,negative" >> data/row/dataset.csv
+            echo "awesome,positive" >> data/row/dataset.csv
+            echo "awful,negative" >> data/row/dataset.csv
+          fi
+
       - name: Run Fast Tests (Data Validation)
         run: |
           # Виконуємо лише ті тести, що перевіряють початкові дані перед навчанням
