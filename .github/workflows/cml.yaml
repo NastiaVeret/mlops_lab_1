@@ -9,8 +9,9 @@ on:
     - cron: '0 0 * * 0' # Запуск розкладом (наприклад, щонеділі) для повного тренування
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   pipeline:
