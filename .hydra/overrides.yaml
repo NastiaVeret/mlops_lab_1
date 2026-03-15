@@ -1,0 +1,3 @@
+- model=lr
+- hpo.sampler=Random
+- hpo.n_trials=20

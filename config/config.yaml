@@ -1,0 +1,17 @@
+defaults:
+  - _self_
+  - model: rf
+  - hpo: optuna
+
+seed: 42
+
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "mlops_lab_1"
+
+hydra:
+  run:
+    dir: .
+  sweep:
+    dir: .
+    subdir: ${hydra.job.num}

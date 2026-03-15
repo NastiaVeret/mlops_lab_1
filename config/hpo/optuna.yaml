@@ -1,0 +1,13 @@
+sampler: "TPE"
+n_trials: 20
+metric: "f1"
+direction: "maximize"
+search_space:
+  model.n_estimators:
+    type: "int"
+    low: 10
+    high: 200
+  model.max_depth:
+    type: "int"
+    low: 2
+    high: 32

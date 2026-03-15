@@ -33,13 +33,19 @@ def log_metrics_and_plots(model, X_train, y_train, X_test, y_test):
         "test_recall": recall_score(y_test, y_pred_test)
     }
     mlflow.log_metrics(metrics)
+    
+    import json
+    with open("metrics.json", "w") as f:
+        json.dump(metrics, f, indent=4)
 
     cm = confusion_matrix(y_test, y_pred_test)
     plt.figure(figsize=(6, 5))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
     plt.savefig("confusion_matrix.png")
-    mlflow.log_artifact("confusion_matrix.png")
     plt.close()
+    
+    mlflow.log_artifact("metrics.json")
+    mlflow.log_artifact("confusion_matrix.png")
 
 
 def train():
@@ -53,6 +59,8 @@ def train():
     X_test = tfidf.transform(test_df['review'])
     y_train, y_test = train_df['sentiment'], test_df['sentiment']
 
+    print("Test")
+
     mlflow.set_experiment("sentiment_analysis_stages")
 
     with mlflow.start_run():
@@ -64,6 +72,9 @@ def train():
 
         log_metrics_and_plots(model, X_train, y_train, X_test, y_test)
         mlflow.sklearn.log_model(model, "model")
+        
+        import joblib
+        joblib.dump(model, "model.pkl")
 
 
 if __name__ == "__main__":

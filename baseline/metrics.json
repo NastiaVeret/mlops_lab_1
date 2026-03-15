@@ -1,0 +1,7 @@
+{
+    "test_accuracy": 0.8250,
+    "test_f1": 0.8200,
+    "test_precision": 0.8150,
+    "test_recall": 0.8250,
+    "train_accuracy": 0.8800
+}

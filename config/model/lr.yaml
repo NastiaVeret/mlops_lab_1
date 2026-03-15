@@ -1,0 +1,4 @@
+name: "Logistic Regression"
+C: 1.0
+max_iter: 100
+random_state: ${seed}

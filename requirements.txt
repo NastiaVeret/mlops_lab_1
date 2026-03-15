@@ -5,3 +5,7 @@ matplotlib
 seaborn
 mlflow
 jupyter
+hydra-optuna-sweeper
+psycopg2-binary
+hydra-core
+optuna

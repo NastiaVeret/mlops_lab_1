@@ -8,6 +8,11 @@ def prepare_data(input_path, output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     df = pd.read_csv(input_path).drop_duplicates()
+    
+    max_rows = os.environ.get("MAX_ROWS", "0")
+    if max_rows.isdigit() and int(max_rows) > 0:
+        df = df.sample(n=min(int(max_rows), len(df)), random_state=42)
+        
     df['sentiment'] = df['sentiment'].map({'positive': 1, 'negative': 0})
 
     train_df, test_df = train_test_split(
