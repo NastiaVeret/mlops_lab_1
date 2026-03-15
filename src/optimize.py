@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
-from sklearn.model_selection import cross_val_score, cross_validate
+from sklearn.model_selection import cross_validate
 import os
 import hashlib
 import subprocess
@@ -184,7 +184,7 @@ def main(cfg: DictConfig):
             mlflow.log_metrics(test_metrics)
             print(f"Final Model Test Metrics: {test_metrics}")
 
-            model_info = mlflow.sklearn.log_model(
+            mlflow.sklearn.log_model(
                 sk_model=final_model,
                 artifact_path="best_model",
                 registered_model_name=f"{cfg.model.name.replace(' ', '_')}_Best",
@@ -203,7 +203,7 @@ def main(cfg: DictConfig):
                 print(f"Model registration error: {e}")
 
         print("\n" + "=" * 40)
-        print(f"OPTUNA STUDY COMPLETED")
+        print("OPTUNA STUDY COMPLETED")
         print(f"Best Parameters: {study.best_params}")
         print(f"Best {cfg.hpo.metric}: {study.best_value:.4f}")
         print("=" * 40)

@@ -4,7 +4,6 @@ import seaborn as sns
 import argparse
 import mlflow
 import mlflow.sklearn
-import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (

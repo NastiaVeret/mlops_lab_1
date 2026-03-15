@@ -6,7 +6,6 @@ import hydra
 from omegaconf import DictConfig
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score
 from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
 import os
