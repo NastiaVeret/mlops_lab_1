@@ -17,9 +17,7 @@ def create_markdown_comparison(
 
     if not os.path.exists(baseline_path):
         with open(output_path, "w", encoding="utf-8") as f:
-            f.write(
-                "Файл `baseline/metrics.json` не знайдено. Ось поточні метрики:\n\n"
-            )
+            f.write("Файл `baseline/metrics.json` не знайдено. Ось поточні метрики:\n\n")
             f.write("| Метрика | Значення |\n")
             f.write("|---------|----------|\n")
             for k, v in current_metrics.items():

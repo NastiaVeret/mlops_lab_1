@@ -3,9 +3,7 @@ import mlflow
 from openai import AsyncOpenAI
 import os
 
-client = AsyncOpenAI(
-    base_url="https://api.groq.com/openai/v1", api_key=os.getenv("api_key")
-)
+client = AsyncOpenAI(base_url="https://api.groq.com/openai/v1", api_key=os.getenv("api_key"))
 
 SYSTEM_PROMPT = "Explain Quantum Physics to an 8-year-old using a simple analogy."
 

@@ -9,18 +9,10 @@ from sklearn.linear_model import LogisticRegression
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train IMDB Sentiment Model")
-    parser.add_argument(
-        "--c_param", type=float, default=1.0, help="Inverse of regularization strength"
-    )
-    parser.add_argument(
-        "--max_iter", type=int, default=100, help="Maximum number of iterations"
-    )
-    parser.add_argument(
-        "--max_features", type=int, default=5000, help="Top N words to use as features"
-    )
-    parser.add_argument(
-        "--author", type=str, default="Anastasiia", help="Name of the researcher"
-    )
+    parser.add_argument("--c_param", type=float, default=1.0, help="Inverse of regularization strength")
+    parser.add_argument("--max_iter", type=int, default=100, help="Maximum number of iterations")
+    parser.add_argument("--max_features", type=int, default=5000, help="Top N words to use as features")
+    parser.add_argument("--author", type=str, default="Anastasiia", help="Name of the researcher")
     return parser.parse_args()
 
 

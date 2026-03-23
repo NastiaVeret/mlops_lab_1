@@ -1,4 +1,5 @@
 """Спільне налаштування CI/локального pytest: Airflow очікує AIRFLOW_HOME до першого імпорту."""
+
 from __future__ import annotations
 
 import os

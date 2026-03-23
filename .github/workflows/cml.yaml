@@ -8,6 +8,9 @@ on:
   schedule:
     - cron: '0 0 * * 0' # Запуск розкладом (наприклад, щонеділі) для повного тренування
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: write
   pull-requests: write
@@ -29,18 +32,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Якщо є файл requirements.txt, краще встановлювати через нього: pip install -r requirements.txt
-          pip install scikit-learn pandas matplotlib seaborn mlflow joblib pytest dvc black flake8
+          pip install -r requirements.txt
+          pip install joblib pytest dvc black flake8
 
       - name: Run code formatting check (Black)
         run: |
-          # Перевіряє лише форматування, не змінюючи файли
+          # pyproject.toml: line-length 120 (узгоджено з flake8 нижче)
           black --check src tests
 
       - name: Run linting (Flake8)
         run: |
-          # Запускаємо лінтер
-          flake8 src tests --max-line-length=120
+          flake8 src tests \
+            --max-line-length=120 \
+            --extend-ignore=E203,W503
 
       - name: Create mock dataset if missing (for CI)
         run: |
@@ -71,20 +75,26 @@ jobs:
           # Якщо ви налаштували dvc.yaml належним чином, використовуйте:
           # dvc repro
           
-          # Налаштування для PR (швидке тренування) vs Main/Schedule (повне тренування)
+          # PR: менше рядків даних і менше ітерацій HPO; push/main — повніше навчання
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             export MAX_ROWS=5000
-            export MAX_ITER=10
-            echo "Running CI mode: MAX_ROWS=$MAX_ROWS, MAX_ITER=$MAX_ITER"
+            export N_ITER_SEARCH=8
+            export LEARNING_CURVE_CV=2
+            echo "Running CI mode: MAX_ROWS=$MAX_ROWS, N_ITER_SEARCH=$N_ITER_SEARCH"
           else
             export MAX_ROWS=0
-            export MAX_ITER=100
-            echo "Running Full mode"
+            export N_ITER_SEARCH=25
+            export LEARNING_CURVE_CV=3
+            echo "Running Full mode: N_ITER_SEARCH=$N_ITER_SEARCH"
           fi
-          
-          # Оскільки зараз використовуємо прямий запуск:
+
           python src/prepare.py data/row/dataset.csv data/prepared
-          python src/train.py --train_data data/prepared/train.csv --test_data data/prepared/test.csv --max_iter $MAX_ITER
+          python src/train.py \
+            --train_data data/prepared/train.csv \
+            --test_data data/prepared/test.csv \
+            --n_iter_search "$N_ITER_SEARCH" \
+            --learning_curve_cv "$LEARNING_CURVE_CV" \
+            --n_jobs 1
 
       - name: Run Post-Training Tests (Quality Gate & Artifacts)
         run: |

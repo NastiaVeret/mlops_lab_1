@@ -1,0 +1,4 @@
+# Локально: pip install -r requirements-dev.txt
+# Перед push: black src tests && flake8 src tests ...
+black>=24.3
+flake8>=7.0

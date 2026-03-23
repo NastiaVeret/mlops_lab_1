@@ -43,9 +43,7 @@ def main(cfg: DictConfig):
     def objective(trial, X, y, cfg):
         n_estimators = trial.suggest_int("n_estimators", 10, 200)
         max_depth = trial.suggest_int("max_depth", 2, 32)
-        model = RandomForestClassifier(
-            n_estimators=n_estimators, max_depth=max_depth, random_state=cfg.seed
-        )
+        model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=cfg.seed)
         return cross_val_score(model, X, y, cv=3, scoring="f1").mean()
 
     samplers = {
@@ -80,9 +78,7 @@ def main(cfg: DictConfig):
                 "best_params": study.best_params,
             }
 
-            mlflow.log_params(
-                {"sampler": name, "n_trials": cfg.hpo.n_trials, "duration": duration}
-            )
+            mlflow.log_params({"sampler": name, "n_trials": cfg.hpo.n_trials, "duration": duration})
             mlflow.log_metrics(
                 {
                     "best_f1": study.best_value,

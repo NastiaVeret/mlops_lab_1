@@ -16,11 +16,7 @@ import subprocess
 
 def get_git_revision_hash() -> str:
     try:
-        return (
-            subprocess.check_output(["git", "rev-parse", "HEAD"])
-            .decode("ascii")
-            .strip()
-        )
+        return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
     except Exception:
         return "unknown"
 
@@ -89,9 +85,7 @@ def main(cfg: DictConfig):
 
             elif "Logistic Regression" in model_name:
                 C = trial.suggest_float("C", 0.01, 10.0, log=True)
-                model = LogisticRegression(
-                    C=C, max_iter=cfg.model.max_iter, random_state=cfg.seed
-                )
+                model = LogisticRegression(C=C, max_iter=cfg.model.max_iter, random_state=cfg.seed)
                 params = {"C": C}
             else:
                 raise ValueError(f"Model type '{model_name}' is not supported.")
@@ -163,9 +157,7 @@ def main(cfg: DictConfig):
 
         print("\nTraining final model with best parameters...")
         if "Random Forest" in cfg.model.name:
-            final_model = RandomForestClassifier(
-                **study.best_params, random_state=cfg.seed
-            )
+            final_model = RandomForestClassifier(**study.best_params, random_state=cfg.seed)
         elif "Logistic Regression" in cfg.model.name:
             final_model = LogisticRegression(**study.best_params, random_state=cfg.seed)
         else:
@@ -192,12 +184,8 @@ def main(cfg: DictConfig):
 
             try:
                 client = mlflow.tracking.MlflowClient()
-                mv = client.get_latest_versions(
-                    f"{cfg.model.name.replace(' ', '_')}_Best", stages=["None"]
-                )[0]
-                client.transition_model_version_stage(
-                    name=mv.name, version=mv.version, stage="Staging"
-                )
+                mv = client.get_latest_versions(f"{cfg.model.name.replace(' ', '_')}_Best", stages=["None"])[0]
+                client.transition_model_version_stage(name=mv.name, version=mv.version, stage="Staging")
                 print(f"Model version {mv.version} transitioned to Staging.")
             except Exception as e:
                 print(f"Model registration error: {e}")

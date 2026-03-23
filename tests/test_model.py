@@ -30,9 +30,7 @@ def test_data_validation():
 
     # Check target classes validity
     valid_sentiments = {"positive", "negative"}
-    assert set(df["sentiment"].unique()).issubset(
-        valid_sentiments
-    ), "Invalid values in 'sentiment' column"
+    assert set(df["sentiment"].unique()).issubset(valid_sentiments), "Invalid values in 'sentiment' column"
 
     # Optional: check prepared validation datasets if exist
     if os.path.exists(TRAIN_DATA_PATH) and os.path.exists(TEST_DATA_PATH):
@@ -101,6 +99,5 @@ def test_quality_gate():
     f1_score = float(metrics.get("f1", metrics.get("test_f1", 0.0)))
 
     assert f1_score >= MIN_F1_SCORE, (
-        f"Quality Gate failed: F1 score ({f1_score:.4f}) "
-        f"is below the minimum threshold ({MIN_F1_SCORE})"
+        f"Quality Gate failed: F1 score ({f1_score:.4f}) " f"is below the minimum threshold ({MIN_F1_SCORE})"
     )

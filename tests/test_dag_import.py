@@ -1,4 +1,5 @@
 """4.2: перевірка DAG на помилки імпорту (DagBag) — зручно ганяти в CI."""
+
 from pathlib import Path
 
 from airflow.models import DagBag

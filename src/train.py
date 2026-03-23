@@ -2,6 +2,7 @@
 Навчання моделей з повним звітом: HPO на валідації, метрики, confusion matrix,
 архітектура pipeline, криві навчання та графіки валідації (CV / learning curve).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -189,9 +190,7 @@ def architecture_report(pipe: Pipeline) -> str:
     return buf.getvalue()
 
 
-def score_for_roc(
-    pipe: Pipeline, X: Any
-) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+def score_for_roc(pipe: Pipeline, X: Any) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
     if hasattr(pipe, "predict_proba"):
         proba = pipe.predict_proba(X)
         if proba.shape[1] == 2:
@@ -215,29 +214,15 @@ def collect_metrics(
     m: Dict[str, float] = {
         "accuracy": float(accuracy_score(y_true, y_pred)),
         "balanced_accuracy": float(balanced_accuracy_score(y_true, y_pred)),
-        "precision_binary": float(
-            precision_score(y_true, y_pred, average="binary", zero_division=0)
-        ),
-        "recall_binary": float(
-            recall_score(y_true, y_pred, average="binary", zero_division=0)
-        ),
+        "precision_binary": float(precision_score(y_true, y_pred, average="binary", zero_division=0)),
+        "recall_binary": float(recall_score(y_true, y_pred, average="binary", zero_division=0)),
         "f1_binary": float(f1_score(y_true, y_pred, average="binary", zero_division=0)),
-        "precision_macro": float(
-            precision_score(y_true, y_pred, average="macro", zero_division=0)
-        ),
-        "recall_macro": float(
-            recall_score(y_true, y_pred, average="macro", zero_division=0)
-        ),
+        "precision_macro": float(precision_score(y_true, y_pred, average="macro", zero_division=0)),
+        "recall_macro": float(recall_score(y_true, y_pred, average="macro", zero_division=0)),
         "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
-        "precision_weighted": float(
-            precision_score(y_true, y_pred, average="weighted", zero_division=0)
-        ),
-        "recall_weighted": float(
-            recall_score(y_true, y_pred, average="weighted", zero_division=0)
-        ),
-        "f1_weighted": float(
-            f1_score(y_true, y_pred, average="weighted", zero_division=0)
-        ),
+        "precision_weighted": float(precision_score(y_true, y_pred, average="weighted", zero_division=0)),
+        "recall_weighted": float(recall_score(y_true, y_pred, average="weighted", zero_division=0)),
+        "f1_weighted": float(f1_score(y_true, y_pred, average="weighted", zero_division=0)),
         "matthews_corrcoef": float(matthews_corrcoef(y_true, y_pred)),
         "cohen_kappa": float(cohen_kappa_score(y_true, y_pred)),
     }
@@ -250,9 +235,7 @@ def collect_metrics(
     scores_for_roc = y_proba if y_proba is not None else y_decision
     if scores_for_roc is not None:
         m["roc_auc"] = float(roc_auc_score(y_true, scores_for_roc))
-        m["average_precision"] = float(
-            average_precision_score(y_true, scores_for_roc)
-        )
+        m["average_precision"] = float(average_precision_score(y_true, scores_for_roc))
     if y_proba is not None:
         try:
             proba_full = np.column_stack([1 - y_proba, y_proba])
@@ -262,9 +245,7 @@ def collect_metrics(
     return m
 
 
-def plot_confusion_matrices(
-    y_true: np.ndarray, y_pred: np.ndarray, prefix: str, labels: List[str]
-) -> List[str]:
+def plot_confusion_matrices(y_true: np.ndarray, y_pred: np.ndarray, prefix: str, labels: List[str]) -> List[str]:
     paths = []
     cm = confusion_matrix(y_true, y_pred)
     fig, ax = plt.subplots(figsize=(6, 5))
@@ -350,9 +331,7 @@ def plot_learning_curve_chart(
     val_std = val_scores.std(axis=1)
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.plot(train_sizes, train_mean, "o-", label="Train F1")
-    ax.fill_between(
-        train_sizes, train_mean - train_std, train_mean + train_std, alpha=0.2
-    )
+    ax.fill_between(train_sizes, train_mean - train_std, train_mean + train_std, alpha=0.2)
     ax.plot(train_sizes, val_mean, "o-", label="CV validation F1")
     ax.fill_between(train_sizes, val_mean - val_std, val_mean + val_std, alpha=0.2)
     ax.set_xlabel("Training samples")
@@ -435,9 +414,7 @@ def train_one_model(
     )
     X_combined = pd.concat([X_sub, X_val], axis=0)
     y_combined = np.concatenate([y_sub, y_val])
-    test_fold = np.concatenate(
-        [np.full(len(X_sub), -1, dtype=int), np.zeros(len(X_val), dtype=int)]
-    )
+    test_fold = np.concatenate([np.full(len(X_sub), -1, dtype=int), np.zeros(len(X_val), dtype=int)])
     cv_split = PredefinedSplit(test_fold=test_fold)
 
     base_pipe = pipe_factories[model_key]
@@ -467,13 +444,9 @@ def train_one_model(
 
     y_pred_train = best.predict(X_train)
     y_proba_tr, y_decision_tr = score_for_roc(best, X_train)
-    metrics_train = collect_metrics(
-        y_train, y_pred_train, y_proba_tr, y_decision_tr
-    )
+    metrics_train = collect_metrics(y_train, y_pred_train, y_proba_tr, y_decision_tr)
 
-    report_txt = classification_report(
-        y_test, y_pred_test, target_names=["negative", "positive"]
-    )
+    report_txt = classification_report(y_test, y_pred_test, target_names=["negative", "positive"])
     report_path = f"{prefix}classification_report.txt"
     Path(report_path).write_text(report_txt, encoding="utf-8")
     print(report_txt)
@@ -509,9 +482,7 @@ def train_one_model(
         with open("metrics.json", "w", encoding="utf-8") as f:
             json.dump(qc_metrics, f, ensure_ascii=False, indent=2)
 
-    cm_paths = plot_confusion_matrices(
-        y_test, y_pred_test, prefix, ["neg", "pos"]
-    )
+    cm_paths = plot_confusion_matrices(y_test, y_pred_test, prefix, ["neg", "pos"])
     if primary:
         import shutil
 
@@ -543,20 +514,13 @@ def train_one_model(
 
         joblib.dump(best, "model.pkl")
 
-    artifact_paths = (
-        [arch_path, metrics_json_path, report_path, cv_path, lc_path]
-        + search_plots
-        + cm_paths
-        + roc_paths
-    )
+    artifact_paths = [arch_path, metrics_json_path, report_path, cv_path, lc_path] + search_plots + cm_paths + roc_paths
     for p in artifact_paths:
         if p and Path(p).exists():
             mlflow.log_artifact(p)
 
     mlflow.log_metrics(flat_for_mlflow)
-    mlflow.log_params(
-        {f"best__{k}": str(v) for k, v in search.best_params_.items()}
-    )
+    mlflow.log_params({f"best__{k}": str(v) for k, v in search.best_params_.items()})
     mlflow.sklearn.log_model(best, artifact_path=f"model_{model_key}")
 
     roc_disp = metrics_test.get("roc_auc")
