@@ -70,6 +70,10 @@ def test_artifacts_creation():
         assert os.path.exists(artifact), f"Artifact '{artifact}' was not generated"
         assert os.path.getsize(artifact) > 0, f"Artifact '{artifact}' is empty"
 
+    with open(METRICS_PATH, "r", encoding="utf-8") as f:
+        m = json.load(f)
+    assert "accuracy" in m and "f1" in m, "metrics.json має містити поля accuracy та f1 (CI / Quality Gate)"
+
     # Check if we can properly load the model
     import joblib
 
@@ -86,14 +90,15 @@ def test_quality_gate():
     """
     assert os.path.exists(METRICS_PATH), f"Metrics file not found: {METRICS_PATH}"
 
-    with open(METRICS_PATH, "r") as f:
+    with open(METRICS_PATH, "r", encoding="utf-8") as f:
         metrics = json.load(f)
 
-    assert "test_f1" in metrics, "Metric 'test_f1' not found in metrics.json"
+    assert "accuracy" in metrics, "Metric 'accuracy' not found in metrics.json"
+    assert "f1" in metrics or "test_f1" in metrics, "Expected 'f1' or 'test_f1' in metrics.json"
 
-    # Threshold definition
+    # Threshold definition (узгоджено з JSON: f1 / test_f1)
     MIN_F1_SCORE = float(os.environ.get("MIN_F1_SCORE", "0.50"))
-    f1_score = metrics.get("test_f1", 0.0)
+    f1_score = float(metrics.get("f1", metrics.get("test_f1", 0.0)))
 
     assert f1_score >= MIN_F1_SCORE, (
         f"Quality Gate failed: F1 score ({f1_score:.4f}) "

@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  lint:
+    name: Lint (flake8 / pylint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install linters
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pylint
+
+      - name: Flake8
+        run: |
+          flake8 src tests scripts dags \
+            --max-line-length=120 \
+            --extend-ignore=E203,W503
+
+      - name: Pylint (без виконання імпортів проєкту)
+        run: |
+          pylint src tests scripts \
+            --errors-only \
+            --disable=import-error,no-member
+
+  dag-integrity:
+    name: DAG integrity (DagBag)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Airflow + залежності DAG
+        run: |
+          python -m pip install --upgrade pip
+          CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-2.10.4/constraints-3.11.txt"
+          pip install "apache-airflow==2.10.4" --constraint "${CONSTRAINT_URL}"
+          pip install "apache-airflow-providers-docker>=3.9.0,<4" --constraint "${CONSTRAINT_URL}"
+          pip install pytest dvc mlflow pandas numpy scikit-learn matplotlib seaborn
+
+      - name: Pytest — DAG import (DagBag)
+        run: pytest tests/test_dag_import.py -v
+
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ML image (Dockerfile)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: mlops-lab:ci
+          load: true
+
+      - name: Build Airflow image (docker/airflow/Dockerfile)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/airflow/Dockerfile
+          push: false
+          tags: mlops-lab-airflow:ci
+          load: true

@@ -1,0 +1,111 @@
+# Локальний Apache Airflow (LocalExecutor) + PostgreSQL.
+# Ініціалізація:   docker compose up airflow-init
+# Запуск:         docker compose up -d
+# Якщо бачите "pull access denied for mlops-lab-airflow": образ лише локальний —
+#   docker compose build && docker compose up -d
+#   (у файлі для Airflow задано pull_policy: build, щоб не тягнути з реєстру.)
+# UI:             http://localhost:8080  (airflow / airflow)
+#
+# Образ ML-проєкту для DockerOperator:
+#   docker compose --profile ml-image build ml-image
+#
+# Для DAG з DockerOperator у .env задайте абсолютний шлях до репозиторію на хості:
+#   ML_PROJECT_HOST_PATH=/Users/you/mlops_lab_1
+
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: docker/airflow/Dockerfile
+  image: mlops-lab-airflow:2.10.4
+  # Не намагатися pull з Docker Hub — цей тег збирається локально з docker/airflow/Dockerfile
+  pull_policy: build
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-Z8dVg6NY2mWzJ454MzdDQn6SU7Fp8SSiqxpgt9aCVbM=}
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    ML_PROJECT_HOST_PATH: ${ML_PROJECT_HOST_PATH:-}
+    AIRFLOW_ML_PROJECT_DIR: /opt/airflow/ml_project
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./config:/opt/airflow/config
+    - ./plugins:/opt/airflow/plugins
+    - .:/opt/airflow/ml_project
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username airflow \
+          --password airflow \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com || true
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    environment:
+      <<: *airflow-common-env
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./config:/opt/airflow/config
+      - ./plugins:/opt/airflow/plugins
+      - .:/opt/airflow/ml_project
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  # Збірка образу ML (docker compose --profile ml-image build ml-image)
+  ml-image:
+    profiles: [ml-image]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mlops-lab:latest
+
+volumes:
+  postgres-db-volume:

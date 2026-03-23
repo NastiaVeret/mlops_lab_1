@@ -1,23 +1,22 @@
 stages:
   prepare:
-    cmd: python src/prepare.py C:\Users\User\mlops_lab_1\data\row\dataset.csv data/prepared
+    cmd: python src/prepare.py data/row/dataset.csv data/prepared
     deps:
-      - C:\Users\User\mlops_lab_1\data\row\dataset.csv
+      - data/row/dataset.csv
       - src/prepare.py
     outs:
       - data/prepared
 
   train:
     cmd: >-
-      python src/train.py 
-      --train_data data/prepared/train.csv 
-      --test_data data/prepared/test.csv 
-      --c_param 1.0 
-      --max_iter 100 
-      --max_features 5000
+      python src/train.py
+      --train_data data/prepared/train.csv
+      --test_data data/prepared/test.csv
     deps:
       - data/prepared/train.csv
       - data/prepared/test.csv
       - src/train.py
     outs:
+      - model.pkl
+      - metrics.json
       - confusion_matrix.png

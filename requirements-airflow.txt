@@ -1,0 +1,10 @@
+# Додаткові пакети в образі Airflow: ML-скрипти (BashOperator) + DockerOperator.
+# Не дублюйте повний requirements.txt (jupyter тощо), щоб зменшити конфлікти з Airflow.
+apache-airflow-providers-docker>=3.9.0,<4
+dvc>=3.0
+pandas>=2.0
+numpy
+scikit-learn
+matplotlib
+seaborn
+mlflow

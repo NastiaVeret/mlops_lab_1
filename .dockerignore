@@ -1,0 +1,31 @@
+# Git і метадані
+.git
+.github
+.gitignore
+
+# Віртуальні середовища та кеш
+venv
+.venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Дані та артефакти (монтуйте томами або підтягуйте через DVC)
+data
+models
+mlruns
+.trash
+.ipynb_checkpoints
+
+# Секрети
+.env
+.env.*
+
+# IDE
+.idea
+.vscode
+
+# Докер (не ігноруйте кореневий Dockerfile — потрібен для сервісу ml-image)
+.dockerignore
