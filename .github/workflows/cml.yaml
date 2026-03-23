@@ -50,27 +50,7 @@ jobs:
         run: |
           mkdir -p data/row
           if [ ! -f "data/row/dataset.csv" ]; then
-            # Мінімум ~80 рядків (збалансовано), інакше test split дає 1–2 зразки — F1 стрибає і Quality Gate падає
-            python - <<'PY'
-            import csv
-            from pathlib import Path
-
-            pos = [
-                "good movie", "great acting", "I loved it", "best film", "excellent story",
-                "highly recommend", "not bad at all", "enjoyed every minute", "fantastic", "amazing cast",
-            ]
-            neg = [
-                "bad movie", "terrible plot", "waste of time", "boring", "awful acting",
-                "worst film", "poor script", "disappointing", "could not finish", "hated it",
-            ]
-            rows = [("review", "sentiment")]
-            for i in range(40):
-                rows.append((f"{pos[i % len(pos)]} review {i}", "positive"))
-                rows.append((f"{neg[i % len(neg)]} review {i}", "negative"))
-            Path("data/row").mkdir(parents=True, exist_ok=True)
-            with open("data/row/dataset.csv", "w", newline="", encoding="utf-8") as f:
-                csv.writer(f).writerows(rows)
-            PY
+            python scripts/ci_create_mock_dataset.py
           fi
 
       - name: Run Fast Tests (Data Validation)
