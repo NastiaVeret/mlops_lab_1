@@ -3,6 +3,10 @@ name: CI
 on:
   push:
 
+# GitHub: поступовий перехід actions на Node 24 (попередження про Node 20).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   lint:
     name: Lint (flake8 / pylint)
@@ -47,10 +51,18 @@ jobs:
           CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-2.10.4/constraints-3.11.txt"
           pip install "apache-airflow==2.10.4" --constraint "${CONSTRAINT_URL}"
           pip install "apache-airflow-providers-docker>=3.9.0,<4" --constraint "${CONSTRAINT_URL}"
-          pip install pytest dvc mlflow pandas numpy scikit-learn matplotlib seaborn
+          pip install pytest dvc mlflow pandas numpy scikit-learn matplotlib seaborn scipy
+          # DockerOperator (dags/ml_pipeline_docker.py) імпортує docker.types.Mount
+          pip install "docker>=6.0"
 
       - name: Pytest — DAG import (DagBag)
-        run: pytest tests/test_dag_import.py -v
+        env:
+          AIRFLOW_HOME: ${{ github.workspace }}/.airflow_ci
+          AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+          AIRFLOW_ML_PROJECT_DIR: ${{ github.workspace }}
+        run: |
+          mkdir -p "$AIRFLOW_HOME"
+          python -m pytest tests/test_dag_import.py -v
 
   docker-build:
     name: Docker build

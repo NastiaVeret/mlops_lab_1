@@ -40,8 +40,7 @@ with DAG(
             f"cd {ML_ROOT} && "
             "python src/train.py "
             "--train_data data/prepared/train.csv "
-            "--test_data data/prepared/test.csv "
-            "--c_param 1.0 --max_iter 100 --max_features 5000"
+            "--test_data data/prepared/test.csv"
         ),
     )
 
