@@ -114,13 +114,17 @@ jobs:
           
           echo "## 📉 Confusion Matrix" >> report.md
           if [ -f "confusion_matrix.png" ]; then
-            # Відправляємо зображення, щоб його можна було вставити у markdown
             cml publish confusion_matrix.png --md >> report.md
           else
             echo "Файл confusion_matrix.png не знайдено." >> report.md
           fi
-          
-          cml comment create report.md
+
+          # На push/schedule немає PR — cml comment create завершується з помилкою (exit 1)
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            cml comment create report.md
+          else
+            echo "Пропуск cml comment create (потрібен контекст pull_request; event=${{ github.event_name }})"
+          fi
 
       - name: Publish Model Artifact (CD)
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
