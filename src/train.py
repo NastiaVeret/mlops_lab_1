@@ -261,9 +261,11 @@ def plot_confusion_matrices(y_true: np.ndarray, y_pred: np.ndarray, prefix: str,
     plt.close()
     paths.append(p1)
 
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+    # normalize у plot() є лише в новіших sklearn; нормалізація через metrics — сумісно зі старими CI
+    cm_norm = confusion_matrix(y_true, y_pred, normalize="true")
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm_norm, display_labels=labels)
     fig2, ax2 = plt.subplots(figsize=(6, 5))
-    disp.plot(ax=ax2, cmap="Blues", values_format=".3f", normalize="true")
+    disp.plot(ax=ax2, cmap="Blues", values_format=".3f")
     plt.title("Confusion matrix (normalized)")
     p2 = f"{prefix}confusion_matrix_normalized.png"
     plt.tight_layout()
